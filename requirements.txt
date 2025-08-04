@@ -11,3 +11,6 @@ pdf2image
 zipfile36
 flask-babel
 babel
+gunicorn
+
+
