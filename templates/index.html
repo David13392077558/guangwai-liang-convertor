@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% if lang == 'en' %}GW Liang's File Magic Hub{% else %}广外梁同学の文件幻变小窝{% endif %}</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <form method="get" style="text-align:right; margin-bottom:10px;">
+            <select name="lang" onchange="this.form.submit()">
+                {% for code, name in languages.items() %}
+                <option value="{{ code }}" {% if lang == code %}selected{% endif %}>{{ name }}</option>
+                {% endfor %}
+            </select>
+        </form>
+        <h1>
+            {% if lang == 'en' %}
+                GW Liang's File Magic Hub
+            {% else %}
+                广外梁同学の文件幻变小窝
+            {% endif %}
+        </h1>
+        <div class="info">
+            <span>{{ _('邮箱：') }}</span><b>2428511134@qq.com</b><br>
+            <span>{{ _('学校：') }}</span><b>{{ _('广东外语外贸大学') }}</b><br>
+            <span>{{ _('学院：') }}</span><b>{{ _('信息科学与技术学院') }}</b>
+        </div>
+        <hr>
+        <h2 class="section-title">{% if lang == 'en' %}Upload Word File (.docx){% else %}上传 Word 文件（.docx）{% endif %}</h2>
+        <form action="/convert" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".docx" required>
+            <button type="submit">{% if lang == 'en' %}Convert to PDF{% else %}转换为 PDF{% endif %}</button>
+        </form>
+
+        <h2 class="section-title">{% if lang == 'en' %}PDF to Long Image (All pages merged as one PNG){% else %}PDF 转长图（所有页面拼接为一张 PNG）{% endif %}</h2>
+        <form action="/pdf_to_long_image" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".pdf" required>
+            <button type="submit">{% if lang == 'en' %}PDF to Long Image{% else %}PDF 转长图{% endif %}</button>
+        </form>
+
+        <h2 class="section-title">{% if lang == 'en' %}PDF to Images (Each page as PNG, download as zip){% else %}PDF 转图片（每页导出为 PNG，打包下载）{% endif %}</h2>
+        <form action="/pdf_to_images" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".pdf" required>
+            <button type="submit">{% if lang == 'en' %}PDF to Images{% else %}PDF 转图片{% endif %}</button>
+        </form>
+
+        <h2 class="section-title">{% if lang == 'en' %}PDF to Word / Excel{% else %}PDF 转 Word / Excel{% endif %}</h2>
+        <form action="/convert_pdf" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".pdf" required>
+            <label>
+                <input type="radio" name="output_type" value="docx" checked> {% if lang == 'en' %}To Word{% else %}转 Word{% endif %}
+            </label>
+            <label>
+                <input type="radio" name="output_type" value="xlsx"> {% if lang == 'en' %}To Excel{% else %}转 Excel{% endif %}
+            </label>
+            <button type="submit">{% if lang == 'en' %}Convert PDF{% else %}PDF 转换{% endif %}</button>
+        </form>
+
+        <h2 class="section-title">{% if lang == 'en' %}Upload Images to Merge PDF{% else %}上传图片合成 PDF{% endif %}</h2>
+        <form action="/convert_images" method="post" enctype="multipart/form-data">
+            <input type="file" name="files" accept="image/*" multiple required>
+            <button type="submit">{% if lang == 'en' %}Images to PDF{% else %}图片转 PDF{% endif %}</button>
+        </form>
+
+        <h2 class="section-title">{% if lang == 'en' %}Upload Excel File (.xlsx){% else %}上传 Excel 文件（.xlsx）{% endif %}</h2>
+        <form action="/convert_excel" method="post" enctype="multipart/form-data">
+            <input type="file" name="file" accept=".xlsx" required>
+            <button type="submit">Excel 转 PDF</button>
+        </form>
+    </div>
+</body>
+</html>

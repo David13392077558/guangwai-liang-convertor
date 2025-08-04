@@ -1,0 +1,13 @@
+flask
+mammoth
+weasyprint
+openpyxl
+xlsx2html
+pillow
+pdfplumber
+pytesseract
+python-docx
+pdf2image
+zipfile36
+flask-babel
+babel
