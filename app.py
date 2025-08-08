@@ -72,23 +72,81 @@ def convert_file():
 @app.route('/convert_excel', methods=['POST'])
 def convert_excel():
     file = request.files['file']
-    if file and file.filename.endswith('.xlsx'):
-        xlsx_path = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(xlsx_path)
-
-        # xlsx2html 转 html
-        html_io = io.StringIO()
-        xlsx2html(xlsx_path, html_io)
-        html_content = html_io.getvalue()
-
-        # html 转 pdf
-        pdf_filename = file.filename.replace('.xlsx', '.pdf')
-        pdf_path = os.path.join(CONVERTED_FOLDER, pdf_filename)
-        HTML(string=html_content).write_pdf(pdf_path)
-
-        return send_file(pdf_path, as_attachment=True)
-    else:
+    if not (file and file.filename.endswith('.xlsx')):
         return "请上传 .xlsx 文件"
+
+    xlsx_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(xlsx_path)
+
+    # 使用 openpyxl 读取 Excel 内容和样式
+    wb = openpyxl.load_workbook(xlsx_path)
+    ws = wb.active
+
+    html_rows = []
+    for row in ws.iter_rows():
+        html_cells = []
+        for cell in row:
+            value = cell.value if cell.value is not None else ""
+            style = ""
+
+            # 提取字体样式
+            if cell.font:
+                if cell.font.bold:
+                    style += "font-weight: bold;"
+                if cell.font.italic:
+                    style += "font-style: italic;"
+                if cell.font.color and cell.font.color.rgb:
+                    rgb = cell.font.color.rgb
+                    if rgb and len(rgb) == 8:  # ARGB 格式
+                        style += f"color: #{rgb[2:]};"
+
+            # 提取背景色
+            if cell.fill and cell.fill.fgColor and cell.fill.fgColor.rgb:
+                bg_rgb = cell.fill.fgColor.rgb
+                if bg_rgb and len(bg_rgb) == 8:
+                    style += f"background-color: #{bg_rgb[2:]};"
+
+            html_cells.append(f'<td style="{style}">{value}</td>')
+        html_rows.append(f"<tr>{''.join(html_cells)}</tr>")
+
+    html_table = f"<table>{''.join(html_rows)}</table>"
+
+    # 构建完整 HTML 页面
+    html_content = f"""
+    <!DOCTYPE html>
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <style>
+            body {{
+                font-family: "DejaVu Sans", "Arial", sans-serif;
+                font-size: 14px;
+                padding: 20px;
+            }}
+            table {{
+                border-collapse: collapse;
+                width: 100%;
+            }}
+            th, td {{
+                border: 1px solid #ccc;
+                padding: 8px;
+                text-align: left;
+            }}
+        </style>
+    </head>
+    <body>
+        <h2>Excel 转 PDF</h2>
+        {html_table}
+    </body>
+    </html>
+    """
+
+    # 生成 PDF
+    pdf_filename = file.filename.replace('.xlsx', '.pdf')
+    pdf_path = os.path.join(CONVERTED_FOLDER, pdf_filename)
+    HTML(string=html_content).write_pdf(pdf_path)
+
+    return send_file(pdf_path, as_attachment=True)
 
 
 # 新增 图片转 PDF 路由
@@ -242,3 +300,4 @@ if __name__ == '__main__':
         with open("error.log", "w", encoding="utf-8") as f:
             traceback.print_exc(file=f)
         raise
+
