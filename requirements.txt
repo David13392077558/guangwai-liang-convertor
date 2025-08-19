@@ -16,7 +16,8 @@ pytesseract
 zipfile36
 
 weasyprint
-pywin32  # 如果你在 Windows 上运行 Excel 转 PDF
+
+
 
 
 
