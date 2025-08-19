@@ -12,5 +12,8 @@ zipfile36
 flask-babel
 babel
 gunicorn
+pywin32
+python-docx
+
 
 
