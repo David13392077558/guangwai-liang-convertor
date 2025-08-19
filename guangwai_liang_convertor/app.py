@@ -1,3 +1,4 @@
+from guangwai_liang_convertor.utils.conversion import convert_excel_to_pdf
 
 import sys
 import traceback
@@ -72,23 +73,19 @@ def convert_file():
 @app.route('/convert_excel', methods=['POST'])
 def convert_excel():
     file = request.files['file']
-    if file and file.filename.endswith('.xlsx'):
-        xlsx_path = os.path.join(UPLOAD_FOLDER, file.filename)
-        file.save(xlsx_path)
-
-        # xlsx2html 转 html
-        html_io = io.StringIO()
-        xlsx2html(xlsx_path, html_io)
-        html_content = html_io.getvalue()
-
-        # html 转 pdf
-        pdf_filename = file.filename.replace('.xlsx', '.pdf')
-        pdf_path = os.path.join(CONVERTED_FOLDER, pdf_filename)
-        HTML(string=html_content).write_pdf(pdf_path)
-
-        return send_file(pdf_path, as_attachment=True)
-    else:
+    if not file.filename.endswith('.xlsx'):
         return "请上传 .xlsx 文件"
+    xlsx_path = os.path.join(UPLOAD_FOLDER, file.filename)
+    file.save(xlsx_path)
+
+    pdf_filename = file.filename.replace('.xlsx', '.pdf')
+    pdf_path = os.path.join(CONVERTED_FOLDER, pdf_filename)
+
+    try:
+        convert_excel_to_pdf(xlsx_path, pdf_path)
+        return send_file(pdf_path, as_attachment=True)
+    except Exception as e:
+        return f"转换失败：{str(e)}"
 
 
 # 新增 图片转 PDF 路由
@@ -242,3 +239,4 @@ if __name__ == '__main__':
         with open("error.log", "w", encoding="utf-8") as f:
             traceback.print_exc(file=f)
         raise
+
