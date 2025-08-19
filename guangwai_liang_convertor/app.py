@@ -1,7 +1,9 @@
 from guangwai_liang_convertor.utils.conversion import convert_excel_to_pdf
+import subprocess
+import traceback
+from flask import Flask, request, send_file, jsonify
 
 import sys
-import traceback
 from flask import Flask, request, send_file, render_template, request, redirect, url_for
 import os
 import mammoth
@@ -72,20 +74,33 @@ def convert_file():
 # 新增 Excel 转 PDF 路由
 @app.route('/convert_excel', methods=['POST'])
 def convert_excel():
-    file = request.files['file']
-    if not file.filename.endswith('.xlsx'):
-        return "请上传 .xlsx 文件"
-    xlsx_path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(xlsx_path)
-
-    pdf_filename = file.filename.replace('.xlsx', '.pdf')
-    pdf_path = os.path.join(CONVERTED_FOLDER, pdf_filename)
-
     try:
+        file = request.files.get('file')
+        if not file or not file.filename.endswith('.xlsx'):
+            return jsonify({"error": "请上传 .xlsx 文件"}), 400
+
+        xlsx_path = os.path.join(UPLOAD_FOLDER, file.filename)
+        file.save(xlsx_path)
+
+        pdf_filename = file.filename.replace('.xlsx', '.pdf')
+        pdf_path = os.path.join(CONVERTED_FOLDER, pdf_filename)
+
+        print(f"[路径检查] xlsx: {xlsx_path}, pdf: {pdf_path}")
+
         convert_excel_to_pdf(xlsx_path, pdf_path)
+
+        if not os.path.exists(pdf_path):
+            return jsonify({"error": f"PDF 文件未生成：{pdf_path}"}), 500
+
         return send_file(pdf_path, as_attachment=True)
+
     except Exception as e:
-        return f"转换失败：{str(e)}"
+        print(f"[Excel 路由异常] {e}")
+        return jsonify({
+            "error": "转换失败",
+            "detail": str(e),
+            "trace": traceback.format_exc()
+        }), 500
 
 
 # 新增 图片转 PDF 路由
@@ -239,4 +254,5 @@ if __name__ == '__main__':
         with open("error.log", "w", encoding="utf-8") as f:
             traceback.print_exc(file=f)
         raise
+
 
