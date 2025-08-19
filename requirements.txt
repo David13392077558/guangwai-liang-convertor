@@ -1,19 +1,23 @@
 flask
-mammoth
-weasyprint
-openpyxl
-xlsx2html
-pillow
-pdfplumber
-pytesseract
-python-docx
-pdf2image
-zipfile36
+gunicorn
 flask-babel
 babel
-gunicorn
-pywin32
+
+openpyxl
+xlsx2html
 python-docx
+mammoth
+
+pdfplumber
+pdf2image
+pillow
+pytesseract
+
+zipfile36
+
+weasyprint
+pywin32  # 如果你在 Windows 上运行 Excel 转 PDF
+
 
 
 
